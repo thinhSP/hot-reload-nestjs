@@ -1,0 +1,49 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: nestjs-app
+    build:
+      context: .
+      target: development
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/app
+      - ./usr/src/app/node_modules
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    command: yarn start:dev
+    depends_on:
+      - cache
+      - db
+    networks:
+      - webnet
+
+  cache:
+    container_name: redis
+    image: redis:5
+    networks:
+      - webnet
+
+  db:
+    container_name: postgres
+    image: postgres:12
+    restart: always
+    networks:
+      - webnet
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: test
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+networks:
+  webnet:
+volumes:
+  pgdata: {}
